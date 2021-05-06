@@ -157,7 +157,11 @@ create table 表名(
 
 **添加一列数据**，如果多列数据使用(n1, n2)：
 
-![image-20210505193705596](C:\Users\huang\AppData\Roaming\Typora\typora-user-images\image-20210505193705596.png)
+```sql
+--- 修改表结构
+--- 添加一列
+alter table person add (gender number(1));
+```
 
 添加之后查看表结构：
 
@@ -169,15 +173,24 @@ create table 表名(
 
 修改列类型：
 
-![image-20210505200749496](C:\Users\huang\AppData\Roaming\Typora\typora-user-images\image-20210505200749496.png)
+```sql
+---修改列类型
+alter table person modify gender char(1);
+```
 
 修改列名称：
 
-![image-20210505200850491](C:\Users\huang\AppData\Roaming\Typora\typora-user-images\image-20210505200850491.png)
+```sql
+---修改列名称
+alter table person rename column gender to sex;
+```
 
 删除一列：
 
-![image-20210505200950109](C:\Users\huang\AppData\Roaming\Typora\typora-user-images\image-20210505200950109.png)
+```sql
+---删除一列
+alter table person drop column sex;
+```
 
 
 
@@ -185,29 +198,64 @@ create table 表名(
 
 添加数据insert：
 
-![image-20210505201304353](C:\Users\huang\AppData\Roaming\Typora\typora-user-images\image-20210505201304353.png)
+```sql
+---添加一条记录
+insert into person(pid, pname) values (1, '小明');
+commit
+```
 
 修改数据update：
 
-![image-20210505201930135](C:\Users\huang\AppData\Roaming\Typora\typora-user-images\image-20210505201930135.png)
+```
+---修改一条记录
+update person set pname = '小马' where pid = 1;
+commit;
+```
 
 删除表数据delete/truncate/drop：
 
-![image-20210505202409211](C:\Users\huang\AppData\Roaming\Typora\typora-user-images\image-20210505202409211.png)
+```sql
+---三个删除
+---删除表中全部记录
+delete from person;
+---删除表结构
+drop table person;
+---先删除表，再次创建表。效果等同于删除表中全部记录
+---在数据量大的情况下，尤其在表中带有索引的情况下，该操作效率高。
+---索引可以提供查询效率，但是会影响增删改效率
+truncate table person;
+```
 
 
 
 ### 6.4.序列
 
-![image-20210505220556788](C:\Users\huang\AppData\Roaming\Typora\typora-user-images\image-20210505220556788.png)
+```sql
+---序列不真的属于任何一张表，但是可以逻辑和表做绑定
+---序列：默认从1开始，依次递增，主要用来给主键赋值使用
+---dual：虚表，只是为了补全语法，没有任何意义
+create sequence s_person;
+select s person.currval from dual;
 
-![image-20210505220635620](C:\Users\huang\AppData\Roaming\Typora\typora-user-images\image-20210505220635620.png)
+---添加一条记录
+insert into person (pid, pname) values (s_person.nextval, '小明');
+commit;
+select * from person;
+```
 
 
 
 ### 6.5.Scott用户介绍
 
-![image-20210505222509262](C:\Users\huang\AppData\Roaming\Typora\typora-user-images\image-20210505222509262.png)
+scott是给初学者学习的用户，学习者可以用Scott登录系统，注意scott用户登录后，就可以使用Oracle提供的数据库和数据表，这些都是oracle提供的，学习者不需要自己创建数据库和数据表，直接使用这些数据库和数据表练习SQL。
+
+```sql
+---scott用户，密码是tiger
+---解锁scott用户
+alter user scott account unlock;
+---解锁scott用户的密码【此句也可以用来重置密码】
+alter user scott identified by tiger;
+```
 
 
 
@@ -218,8 +266,6 @@ create table 表名(
 单行函数：作用于一行，返回一个值。
 
 多行函数：作用于多行，返回一个值。
-
-
 
 **字符函数**
 
@@ -239,13 +285,29 @@ select mod(10, 3) from dual;  -- 求余数
 
 **日期函数**
 
-![image-20210505232243279](C:\Users\huang\AppData\Roaming\Typora\typora-user-images\image-20210505232243279.png)
+```sql
+---查询出emp表中所有员工入职距离现在几天
+select sysdate-e.hiredate from emp e;
+---算出明天此刻
+select sysdate+1 from dual;
+---查询出emp表中所有员工入职距离现在几月
+select months_between(sysdate, e.hiredate) from emp e;
+---查询出emp表中所有员工入职距离现在几年
+select months_between(sysdate, e.hiredate)/12 from emp e;
+---查询出emp表中所有员工入职距离现在几周
+select round((sysdate-e.hiredate)/7) from emp e;
+```
 
 **转换函数**
 
 日期转换成字符串
 
-fm表示 04前面省略0
+注意：fm表示如果是"04"格式前面会自动省略0，展示为"4"；
+
+```sql
+---转换函数
+select to_char(sysdate, 'fm yyyy-mm-dd hh24:mi:ss') from dual;
+```
 
 ![image-20210505232424727](C:\Users\huang\AppData\Roaming\Typora\typora-user-images\image-20210505232424727.png)
 
@@ -253,17 +315,34 @@ fm表示 04前面省略0
 
 字符串转日期
 
-![image-20210505232631761](C:\Users\huang\AppData\Roaming\Typora\typora-user-images\image-20210505232631761.png)
+```sql
+---字符串转日期
+select to_date('2018-6-7 16:39:50', 'fm yyyy-mm-dd hh24:mi:ss') from dual;
+```
 
 
 
 **多行函数（聚合函数）**
 
-![image-20210506082211521](C:\Users\huang\AppData\Roaming\Typora\typora-user-images\image-20210506082211521.png)
+```sql
+---多行函数【聚合函数】：作用于多行，返回一个值。
+select count(1) from emp;   ---查询总数量
+select sum(sal) from emp;   ---工资总和
+select max(sal) from emp;   ---最大工资
+select min(sal) from emp;   ---最低工资
+select avg(sal) from emp;   ---平均工资
+```
 
 
 
 ### 7.2.通用函数
+
+```sql
+--- 通用函数
+--- 算出emp表中所有员工的年薪
+--- 奖金里面有null值，如果null值和任意数字做算术运算，结果都是null
+select e.sal*12+nvl(e.comm, 0) from emp e;
+```
 
 ![image-20210505233221353](C:\Users\huang\AppData\Roaming\Typora\typora-user-images\image-20210505233221353.png)
 
@@ -273,11 +352,33 @@ fm表示 04前面省略0
 
 以下两种表达式为mysql、oracle通用表达式：
 
-![image-20210505233724720](C:\Users\huang\AppData\Roaming\Typora\typora-user-images\image-20210505233724720.png)
+```sql
+---条件表达式
+---给emp表中员工起中文名
+select e.ename,
+	   case e.ename
+	   	when 'SMITH' then '曹贼'
+	   	when 'ALLEN' then '大耳贼'
+	   	when 'WARD'  then '诸葛小儿'
+	   	else '无名'  --- 注意：如果else不写则为null
+	   	end
+from emp e;
+```
+
+![image-20210506203313456](C:\Users\huang\AppData\Roaming\Typora\typora-user-images\image-20210506203313456.png)
 
 
 
-![image-20210505234100383](C:\Users\huang\AppData\Roaming\Typora\typora-user-images\image-20210505234100383.png)
+```sql
+---判断emp表中员工工资，如果高于3000显示高收入；如果高于1500低于3000显示中等收入；其余显示低收入
+select e.sal,
+	case
+	 when e.sal>3000 then '高收入'
+	 when e.sal>1500 then '中等收入'
+	 else '低收入'
+	end
+from emp e;
+```
 
 ![image-20210505234114589](C:\Users\huang\AppData\Roaming\Typora\typora-user-images\image-20210505234114589.png)
 
@@ -285,19 +386,60 @@ fm表示 04前面省略0
 
 其中"中文名"为别名，别名使用双引号，其余都用单引号。
 
+```sql
+---oracle专用条件表达式
+select e.ename,
+	decode(e.ename,
+          'SMITH', '曹贼',
+          'ALLEN', '大耳贼',
+          'WARD', '诸葛小儿',
+          '无名') 中文名
+from emp e;
+```
+
+![image-20210506204030486](C:\Users\huang\AppData\Roaming\Typora\typora-user-images\image-20210506204030486.png)
+
 ![image-20210505234415757](C:\Users\huang\AppData\Roaming\Typora\typora-user-images\image-20210505234415757.png)
 
 ### 7.4.聚合函数
 
-![image-20210506085803347](C:\Users\huang\AppData\Roaming\Typora\typora-user-images\image-20210506085803347.png)
+```sql
+---分组查询
+---查询出每个部门的平均工资
+---分组查询中，出现在group by 后面的原始列，才能出现在select后面
+---没有出现在group by后面的列，想在select后面，必须加上聚合函数
+---聚合函数有一个特性，可以把多行记录变成一个值
+select e.deptno, avg(e.sal)
+from emp e
+group by e.deptno;
+```
 
 别名问题：
 
-![image-20210506090029185](C:\Users\huang\AppData\Roaming\Typora\typora-user-images\image-20210506090029185.png)
+```sql
+---查询出平均工资高于2000的部门信息
+select e.deptno, avg(e.sal) asal
+from emp e
+group by e.deptno
+having avg(e.sal)>2000;
+---所有条件都不能使用别名来判断
+---比如下面的条件语句也不能使用别名当条件
+select ename, sal s from emp where sal>1500;
+```
 
 分组group by与having问题：
 
-![image-20210506090215323](C:\Users\huang\AppData\Roaming\Typora\typora-user-images\image-20210506090215323.png)
+```sql
+---where是过滤分组前的数据，having是过滤分组后的数据
+---表现形式：where必须在group by之前，having是在group by之后
+---查询出每个部门工资高于800的员工的平均工资
+---然后再查询出平均工资高于2000的部门
+select e.deptno, avg(e.sal) asal
+from emp e
+where e.sal>800
+group by e.deptno
+having avg(e.sal)>2000;
+```
 
 
 
@@ -307,21 +449,58 @@ left join、right join、inner join
 
 oracle中特有的连接方式，(+)在的地方表示right join等同
 
-![image-20210506092338850](C:\Users\huang\AppData\Roaming\Typora\typora-user-images\image-20210506092338850.png)
+```sql
+---oracle中专用外连接
+select *
+from emp e, dept d
+where e.deptno(+) = d.deptno;
+```
 
 ### 7.6.自连接查询
 
-![image-20210506094654390](C:\Users\huang\AppData\Roaming\Typora\typora-user-images\image-20210506094654390.png)
+```sql
+---查询出员工姓名，员工领导姓名
+---自连接：自连接其实就是站在不同的角度把一张表看成多张表
+select e1.ename, e2.ename
+from emp e1, emp e2
+where e1.mgr = e2.empno;
+```
 
 
 
 ### 7.7.分页查询
+
+```sql
+---rownum行号：当我们做select操作的时候，
+---没查询出一行记录，就会在该行上加上一个行号，
+---行号从1开始，依次递增，不能跳着走
+---emp表工资倒叙排列后，每页五条记录，查询第二页
+---排序操作会影响rownum的顺序
+select rownum, e.* from emp e order by e.sal desc
+---如果涉及到排序，但是还要使用rownum的话，我们可以再次嵌套查询
+select rownum, t.* from(
+	select rownum, e.* from emp e order by e.sal desc) t;
+```
+
+
 
 ![image-20210506102106715](C:\Users\huang\AppData\Roaming\Typora\typora-user-images\image-20210506102106715.png)
 
 ![image-20210506102758784](C:\Users\huang\AppData\Roaming\Typora\typora-user-images\image-20210506102758784.png)
 
 分页查询固定格式：
+
+```sql
+---emp表工资倒叙排列后，每页五条记录，查询第二页
+---rownum行号不能写上大于一个正数
+select * from(
+    select rownum rn, tt.* from(
+        select * from emp order by sal desc  ---这里可以写需要进行分页的数据
+    ) tt where rownum < 11
+) where rn > 5;
+```
+
+
 
 ![image-20210506103015943](C:\Users\huang\AppData\Roaming\Typora\typora-user-images\image-20210506103015943.png)
 
